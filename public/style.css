@@ -113,14 +113,31 @@ body{
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    gap: 10px;
+    gap: 5px;
 }
 
 .chatCard{
-    margin-top: 3px;
+    margin-top: 10px;
     width: 95%;
     margin-left: 2.5%;
     height: 12%;
-    background-color: #8f640e;
+    background-color: #b6892f;
     border-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    
+}
+
+.chatCard>h3{
+    margin: 0;
+    margin-left: 10px;
+    color: #ffebc3;
+}
+
+.chatCard>p{
+    margin: 0;
+    margin-right: 30px;
+    color: #ffebc3ad;
 }

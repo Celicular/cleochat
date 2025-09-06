@@ -30,8 +30,9 @@ regButton.addEventListener('click', function(event) {
     var mobile = document.getElementById('mobile').value;
     var email = document.getElementById('email').value;
     var password = document.getElementById('pwd').value;
+    var user = document.getElementById('user').value;
 
-    if (!name && !mobile && !email && !password) {
+    if (!name && !mobile && !email && !password && !user) {
         alert('Please fill in all fields');
         return;
     }else{
@@ -44,6 +45,8 @@ regButton.addEventListener('click', function(event) {
         }else if (mobile.length < 10) {
             alert('Mobile number must be at least 10 digits long');
             return;
+        }else if(user.length < 8 || user.length > 50){
+            alert('username must be minimum 8 characters and maximum 50 characters')
         }
     }
 
@@ -51,7 +54,8 @@ regButton.addEventListener('click', function(event) {
         name: name,
         mobile: mobile,
         email: email,
-        password: password
+        password: password,
+        username: user
     };
 
     register(data);

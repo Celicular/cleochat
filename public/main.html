@@ -6,7 +6,7 @@
     <title>Cleochat</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="../assets/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
 </head>
 <body>
     <div class="main">
@@ -17,34 +17,63 @@
             </div>
             <div class="heading">
                 <h2>Your Chats!</h2>
+                <div class="addContact"></div>
             </div>
             <div class="chatgroup">
-                <div class="chatCard">
-                    <h3>Himadri</h3>
-                    <p>status</p>
-                </div>
-                <div class="chatCard">
-                    <h3>Himadri</h3>
-                    <p>status</p>
-                </div>
-                <div class="chatCard">
-                    <h3>Himadri</h3>
-                    <p>status</p>
-                </div>
-                <div class="chatCard">
-                    <h3>Himadri</h3>
+                <div class="chatCard" style="display: none;">
+                    <div class="namedata">
+                        <h3>Name</h3>
+                        <h2>username</h2>
+                    </div>
                     <p>status</p>
                 </div>
             </div>
         </div>
         <div class="window">
             <div class="ribbon">
+                <h1 class="invID">My Invite ID: XXXXXX</h1>
+                <div class="showChat">
+                    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                </div>
                 <div class="logout"></div>
             </div>
-            <div class="chat"></div>
+            <div class="chat">
+                <div class="chatHeader">
+                    <div class="chatnamedata">
+                        <h3>Name</h3>
+                        <h2>status</h2>
+                    </div>
+                </div>
+                <div class="chatmessages">
+                </div>
+                <div class="inputmessage">
+                    <input class="sendmessage"   type="text" id="inputmessage">
+                    <div class="send"></div>
+                </div>
+            </div>
         </div>
     </div>
 
+
+    <dialog id="contactAdd">
+        <div class="d-body">
+            <div class="d-heading">Enter Reciever Id</div>
+            <div class="d-input">
+                <input type="text" maxlength="1" class="d-value">
+                <input type="text" maxlength="1" class="d-value">
+                <input type="text" maxlength="1" class="d-value">
+                <input type="text" maxlength="1" class="d-value">
+                <input type="text" maxlength="1" class="d-value">
+                <input type="text" maxlength="1" class="d-value">
+            </div>
+            <a class="addReciever submit" id="submitContact">Submit</a>
+            <a class="closeContactDialog">close dialog</a>
+            </div>
+    </dialog>
+
+    
+
     <script type="module" src="script.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
 </body>
 </html>

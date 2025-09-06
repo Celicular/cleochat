@@ -1,7 +1,7 @@
 loginbtn = document.getElementById('submit');
 
-function login(data){
-    fetch("http://localhost:3000/login", {
+async function login(data){
+    await fetch("/login", {
         method: 'POST',
         headers: {
             'Content-Type': 'Application/json'
@@ -10,8 +10,11 @@ function login(data){
     }).then(res => res.json())
     .then(data => {
         if(data.result == "ok"){
+            console.log(data.session);
             alert("logged in");
             document.cookie = `userSession=${data.session}`;
+            localStorage.setItem("currentChatName", "");
+            localStorage.setItem("currentChatRecieverAddress", "");
             window.location.href = "main.html";
 
         }else{

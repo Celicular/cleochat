@@ -22,24 +22,25 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 
-const db = mysql2.createConnection(
-    {
-        host: 'battlegroundmobileindia.in',
-        user: 'u423328347_celi',
-        password: 'Celi@4321',
-        database: 'u423328347_test',
-        port: 3306
-    }
-);
-
-
-db.connect((err) => {
-    if (err) {
-        console.error('DB Connection Error:', err);
-    } else {
-        console.log('Connected to MySQL!');
-    }
+const db = mysql2.createPool({
+    host: 'battlegroundmobileindia.in',
+    user: 'u423328347_celi',
+    password: 'Celi@4321',
+    database: 'u423328347_test',
+    port: 3306,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
+
+
+// db.connect((err) => {
+//     if (err) {
+//         console.error('DB Connection Error:', err);
+//     } else {
+//         console.log('Connected to MySQL!');
+//     }
+// });
 
 
 const server = http.createServer(app);

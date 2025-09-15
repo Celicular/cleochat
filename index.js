@@ -73,7 +73,7 @@ app.post("/register", async (req, res) => {
 
             db.query('INSERT INTO cusers (name, pwd, email, mobile, session, username, address) VALUES (?,?,?,?,?,?,?)',[name, hashedpwd, email, mobile, session, username, address ],(err, result)=> {
             if(err) throw err;
-            db.query('INSERT INTO cuserstatus (address) VALUES (?)', [address], (e,r) => {
+            db.query('INSERT INTO userstatus (address) VALUES (?)', [address], (e,r) => {
                 if(e) throw e;
             })
             db.query('INSERT INTO userpublic (InviteId, userAddress) VALUES (?, ?)', [invite, address], (e,r) => {

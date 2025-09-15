@@ -2,7 +2,7 @@ regButton = document.getElementById('submit');
 import API_URL from "./config";
 
 function register(data) {
-    fetch(`${API_URL}/register`, {
+    fetch(`/register`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

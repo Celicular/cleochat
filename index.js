@@ -79,7 +79,7 @@ app.post("/register", async (req, res) => {
             db.query('INSERT INTO userpublic (InviteId, userAddress) VALUES (?, ?)', [invite, address], (e,r) => {
                 if(e) throw e;
             })
-            db.query('INSERT INTO userContacts (address, contactData) VALUES (?, ?)', [address, ""], (e,r) => {
+            db.query('INSERT INTO usercontacts (address, contactData) VALUES (?, ?)', [address, ""], (e,r) => {
                 if(e) throw e;
             })
             res.json({result:'ok',data:'added user'}); 
@@ -110,7 +110,7 @@ app.post("/invite", (req, res) => {
                             result : 'fail due to invite exist'
                         })
                     }else{
-                        db.query("UPDATE userContacts SET contactData = CONCAT(contactData, ?) WHERE address = ?", [data.invite + ",", address], (e,r) => {
+                        db.query("UPDATE usercontacts SET contactData = CONCAT(contactData, ?) WHERE address = ?", [data.invite + ",", address], (e,r) => {
                             if(e) throw e;
                         })
                         res.json({
@@ -141,7 +141,7 @@ app.post("/verify", async(req, res) => {
             console.log(result);
             const myaddress = result[0].address;
             let finaldata = myaddress;
-            db.query("SELECT contactData FROM userContacts WHERE address = ?", [result[0].address], (e,r) => {
+            db.query("SELECT contactData FROM usercontacts WHERE address = ?", [result[0].address], (e,r) => {
                 if(e) throw e;
                 const contacts = r[0].contactData.split(",").filter(item => item !== "");
                 console.log(contacts);

@@ -133,77 +133,76 @@ app.post("/invite", (req, res) => {
     
 })
 
-app.post("/verify", async(req, res) => {
-    const {cookie} = req.body;
-    db.query("SELECT * FROM cusers WHERE session=?", [cookie], async (err, result) => {
-        if(err) throw err
-        if(result.length != 0){
-            console.log(result);
-            const myaddress = result[0].address;
-            let finaldata = myaddress;
-            db.query("SELECT contactData FROM usercontacts WHERE address = ?", [result[0].address], (e,r) => {
-                if(e) throw e;
-                const contacts = (r.length > 0 && r[0].contactData) 
-                    ? r[0].contactData.split(",").filter(item => item !== "")
-                    : [];
-                console.log(contacts);
-                if(contacts.length < 1){
-                    db.query("SELECT up.InviteId FROM cusers u JOIN userpublic up ON u.address = up.userAddress where u.session = ?", [cookie], (e,r) => {
-                        if(e) throw e
-                        
-                        res.json({
-                        myInviteId : r[0].InviteId,
-                        address : finaldata,
-                        result : 'ok'   
-                    })
-                    })
-                    
-                }else{
-                db.query("SELECT userAddress FROM userpublic WHERE InviteId IN (?)", [contacts], (e,r) => {
-                    if(e) throw e;
-                    console.log(r);
-                    let addresses = [];
-                    r.forEach((rdata => {
-                        addresses.push(rdata.userAddress.trim());
-                    }))
+const query = (sql, params) => {
+    return new Promise((resolve, reject) => {
+        db.query(sql, params, (err, result) => {
+            if (err) return reject(err);
+            resolve(result);
+        });
+    });
+};
 
-                    db.query("SELECT name, username, address FROM cusers WHERE address IN (?)",[addresses], (e,r) => {
-                        if(e) throw e;
-                        console.log(r);
-                        let finaluserdata = r;
-                        db.query("SELECT up.InviteId FROM cusers u JOIN userpublic up ON u.address = up.userAddress where u.session = ?", [cookie], (e,r) => {
-                            if(e) throw e;
-                            let myInviteID = r[0].InviteId;
-                            console.log(r[0].InviteId);
+app.post("/verify", async (req, res) => {
+    try {
+        const { cookie } = req.body;
 
-                            res.json({
-                                result : 'ok',
-                                userData : finaluserdata,
-                                myInviteId : myInviteID,
-                                address : myaddress
-                            })
-                        })
-                    })
-
-
-
-                    // res.json(
-                    //         {
-                    //             result : 'ok',
-                    //             userData : r
-                    //         }
-                    //     )
-                })
-            }
-            })
-        }else{
-            res.json({
-                result:"fail"
-            })
+        // Step 1: Get user by session
+        const users = await query("SELECT * FROM cusers WHERE session = ?", [cookie]);
+        if (users.length === 0) {
+            return res.json({ result: "fail" });
         }
-    })
-})
 
+        const user = users[0];
+        const myAddress = user.address;
+
+        // Step 2: Get contact data
+        const contactRows = await query("SELECT contactData FROM usercontacts WHERE address = ?", [myAddress]);
+        const contacts = (contactRows.length > 0 && contactRows[0].contactData)
+            ? contactRows[0].contactData.split(",").filter(item => item !== "")
+            : [];
+
+        // Step 3: Get user's own InviteId
+        const inviteRows = await query(
+            "SELECT up.InviteId FROM cusers u JOIN userpublic up ON u.address = up.userAddress WHERE u.session = ?",
+            [cookie]
+        );
+        const myInviteId = inviteRows[0]?.InviteId || null;
+
+        // Step 4: If no contacts, return only user's own data
+        if (contacts.length < 1) {
+            return res.json({
+                result: "ok",
+                myInviteId,
+                address: myAddress
+            });
+        }
+
+        // Step 5: Get addresses of contacts
+        const contactAddressesRows = await query(
+            "SELECT userAddress FROM userpublic WHERE InviteId IN (?)",
+            [contacts]
+        );
+        const contactAddresses = contactAddressesRows.map(r => r.userAddress.trim());
+
+        // Step 6: Get user info for contact addresses
+        const userData = await query(
+            "SELECT name, username, address FROM cusers WHERE address IN (?)",
+            [contactAddresses]
+        );
+
+        // Step 7: Return all data
+        return res.json({
+            result: "ok",
+            userData,
+            myInviteId,
+            address: myAddress
+        });
+
+    } catch (err) {
+        console.error("Verify Route Error:", err);
+        return res.status(500).json({ result: "error", message: "Internal server error" });
+    }
+});
 
 app.post("/login", async (req, res) => {
     const {email, password} = req.body;

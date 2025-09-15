@@ -1,7 +1,7 @@
 regButton = document.getElementById('submit');
 
 function register(data) {
-    fetch('http://localhost:3000/register', {
+    fetch('/register', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

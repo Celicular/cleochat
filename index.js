@@ -27,9 +27,19 @@ const db = mysql2.createConnection(
         host: 'battlegroundmobileindia.in',
         user: 'u423328347_celi',
         password: 'Celi@4321',
-        database: 'u423328347_test'
+        database: 'u423328347_test',
+        port: 3306
     }
 );
+
+
+db.connect((err) => {
+    if (err) {
+        console.error('DB Connection Error:', err);
+    } else {
+        console.log('Connected to MySQL!');
+    }
+});
 
 
 const server = http.createServer(app);

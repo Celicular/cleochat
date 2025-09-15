@@ -143,7 +143,9 @@ app.post("/verify", async(req, res) => {
             let finaldata = myaddress;
             db.query("SELECT contactData FROM usercontacts WHERE address = ?", [result[0].address], (e,r) => {
                 if(e) throw e;
-                const contacts = r[0].contactData.split(",").filter(item => item !== "");
+                const contacts = (r.length > 0 && r[0].contactData) 
+                    ? r[0].contactData.split(",").filter(item => item !== "")
+                    : [];
                 console.log(contacts);
                 if(contacts.length < 1){
                     db.query("SELECT up.InviteId FROM cusers u JOIN userpublic up ON u.address = up.userAddress where u.session = ?", [cookie], (e,r) => {

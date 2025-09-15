@@ -121,9 +121,7 @@ body{
 }
 
 .message{
-    margin: 0;
     margin-top: 25px;
-
     width: auto;
     max-width: 80%;
     height: auto;
@@ -178,6 +176,7 @@ body{
     border: 1px solid #ffd7a4;
     color: #ffebd0;
     font-size: 1.4rem;
+    border-radius: 10px;
 }
 
 .sendmessage:focus{
@@ -419,7 +418,7 @@ body{
 
   .sendmessage{
     height: 30%;
-    width: 80%;
+    width: 83%;
     font-size: 1.2rem;
     margin-bottom: 15%;
     margin-left: 10px;
@@ -431,7 +430,11 @@ body{
     margin-bottom: 15%;
     /* background-size: contain; */
     background-position: center;
+    margin-right: 2px;
+    border-radius: 40%;
+    border: 2px solid #ffebc3;
     z-index: 0;
+    scale: 0.6;
   }
 
   .invID{
@@ -456,7 +459,7 @@ body{
   .sidebar{
     display: none;
     position: absolute;
-    width: 60%;
+    width: 80%;
     height: 100%;
   }
 
@@ -515,4 +518,17 @@ body{
     background-color: #ffebc3;
   }
 
+  #contactAdd{
+    width: 70%;
+    background-color: #c5aa86;
+    border: 2px solid #ffebc3;
 }
+
+
+#contactadd::backdrop{
+    background-color: black;
+}
+
+
+}
+

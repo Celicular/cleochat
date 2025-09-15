@@ -24,10 +24,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const db = mysql2.createConnection(
     {
-        host: 'localhost',
-        user: 'root',
-        password: 'celi',
-        database: 'cleochat'
+        host: 'battlegroundmobileindia.in',
+        user: 'u423328347_celi',
+        password: 'Celi@4321',
+        database: 'u423328347_test'
     }
 );
 
@@ -48,7 +48,7 @@ app.post("/register", async (req, res) => {
     console.log("Received registration data:", { name, mobile, email, password, username });
     const hashedpwd = await bcrypt.hash(password,8);
 
-    db.query("SELECT * FROM USERS WHERE LOWER(username) = LOWER(?) OR mobile = ?", [username, mobile], (err, result) => {
+    db.query("SELECT * FROM cusers WHERE LOWER(username) = LOWER(?) OR mobile = ?", [username, mobile], (err, result) => {
         if(err) throw err;
         if(result.length != 0){
             res.json({
@@ -60,9 +60,9 @@ app.post("/register", async (req, res) => {
             const address = generateLongString(16);
             const invite = generateLongString(6);
 
-            db.query('INSERT INTO users (name, pwd, email, mobile, session, username, address) VALUES (?,?,?,?,?,?,?)',[name, hashedpwd, email, mobile, session, username, address ],(err, result)=> {
+            db.query('INSERT INTO cusers (name, pwd, email, mobile, session, username, address) VALUES (?,?,?,?,?,?,?)',[name, hashedpwd, email, mobile, session, username, address ],(err, result)=> {
             if(err) throw err;
-            db.query('INSERT INTO userStatus (address) VALUES (?)', [address], (e,r) => {
+            db.query('INSERT INTO cuserstatus (address) VALUES (?)', [address], (e,r) => {
                 if(e) throw e;
             })
             db.query('INSERT INTO userpublic (InviteId, userAddress) VALUES (?, ?)', [invite, address], (e,r) => {
@@ -84,7 +84,7 @@ app.post("/invite", (req, res) => {
     const data = req.body;
     console.log(data);
     let address;
-    db.query("SELECT * FROM users WHERE session=?", [data.session], async (err, result) => {
+    db.query("SELECT * FROM cusers WHERE session=?", [data.session], async (err, result) => {
         if(err) throw err
         const userData = result[0];
         address = userData.address;
@@ -124,7 +124,7 @@ app.post("/invite", (req, res) => {
 
 app.post("/verify", async(req, res) => {
     const {cookie} = req.body;
-    db.query("SELECT * FROM users WHERE session=?", [cookie], async (err, result) => {
+    db.query("SELECT * FROM cusers WHERE session=?", [cookie], async (err, result) => {
         if(err) throw err
         if(result.length != 0){
             console.log(result);
@@ -135,7 +135,7 @@ app.post("/verify", async(req, res) => {
                 const contacts = r[0].contactData.split(",").filter(item => item !== "");
                 console.log(contacts);
                 if(contacts.length < 1){
-                    db.query("SELECT up.InviteId FROM users u JOIN userpublic up ON u.address = up.userAddress where u.session = ?", [cookie], (e,r) => {
+                    db.query("SELECT up.InviteId FROM cusers u JOIN userpublic up ON u.address = up.userAddress where u.session = ?", [cookie], (e,r) => {
                         if(e) throw e
                         
                         res.json({
@@ -154,11 +154,11 @@ app.post("/verify", async(req, res) => {
                         addresses.push(rdata.userAddress.trim());
                     }))
 
-                    db.query("SELECT name, username, address FROM users WHERE address IN (?)",[addresses], (e,r) => {
+                    db.query("SELECT name, username, address FROM cusers WHERE address IN (?)",[addresses], (e,r) => {
                         if(e) throw e;
                         console.log(r);
                         let finaluserdata = r;
-                        db.query("SELECT up.InviteId FROM users u JOIN userpublic up ON u.address = up.userAddress where u.session = ?", [cookie], (e,r) => {
+                        db.query("SELECT up.InviteId FROM cusers u JOIN userpublic up ON u.address = up.userAddress where u.session = ?", [cookie], (e,r) => {
                             if(e) throw e;
                             let myInviteID = r[0].InviteId;
                             console.log(r[0].InviteId);
@@ -195,7 +195,7 @@ app.post("/verify", async(req, res) => {
 app.post("/login", async (req, res) => {
     const {email, password} = req.body;
     console.log({email, password});
-    db.query('SELECT * FROM USERS WHERE email = ?', [email], async (err, result) => {
+    db.query('SELECT * FROM cusers WHERE email = ?', [email], async (err, result) => {
         if(err) throw err;
         if(result.length == 0){
             res.json({result:'fail', data:"nodata"});
@@ -206,7 +206,7 @@ app.post("/login", async (req, res) => {
         console.log(match);
         if(match){
             let newsession = generateLongString(64);
-            db.query("UPDATE users SET session = ? WHERE session = ?", [newsession, user.session], (err, result) => {
+            db.query("UPDATE cusers SET session = ? WHERE session = ?", [newsession, user.session], (err, result) => {
                 if(err) throw err;
             })
             console.log(newsession);
@@ -228,7 +228,8 @@ app.post("/login", async (req, res) => {
 
 app.post("/getuserdata", (req, res) => {
     const {username} = req.body;
-    db.query("SELECT address, name FROM users WHERE username = ?", [username], (e,r) =>{
+    //get last message too
+    db.query("SELECT address, name FROM cusers WHERE username = ?", [username], (e,r) =>{
         if(e) throw e;
         res.send({
             data:r[0]
@@ -264,46 +265,60 @@ app.post("/sendMsg", (req, res) => {
     })
 })
 
+const roomusers = {}
+
 io.on("connection", (socket) => {
   console.log("user connected:", socket.id);
 
-  // Step 1: user registers (with their address from DB/session)
   socket.on("register", (address) => {
     socket.join(address); // join a room
     console.log(`${address} joined their room`);
+
+    if(!roomusers[address]){
+        roomusers[address] = []
+    }
+    roomusers[address].push(address)
   });
 
-  // Step 2: user sends a message via socket
   socket.on("sendMsg", ({ saddr, raddr, message }) => {
-    db.query(
-      "INSERT INTO chats(senderaddr, recieveaddr, message, isread, issent, type) VALUES (?,?,?,?,?,?)",
-      [saddr, raddr, message, 0, 1, "message"],
-      (err) => {
-        if (err) throw err;
-
-        // Deliver instantly
-        io.to(raddr).emit("newMessage", {
-          saddr,
-          raddr,
-          message,
-          date: new Date(),
+    if(roomusers[raddr] && roomusers[raddr].length > 0){
+        roomusers[raddr].forEach(socketId => {
+            io.to(socketId).emit("newMessage", {
+                saddr,
+                raddr,
+                message,
+                date: new Date()
+            });
         });
+    }
 
-        // Also send back to sender (to update their UI immediately)
-        io.to(saddr).emit("newMessage", {
-          saddr,
-          raddr,
-          message,
-          date: new Date(),
+    if(roomusers[saddr] && roomusers[saddr].length > 0){
+        roomusers[saddr].forEach(socketId => {
+            io.to(socketId).emit("newMessage", {
+                saddr,
+                raddr,
+                message,
+                date: new Date()
+            });
         });
-      }
-    );
-  });
+    }
 });
 
+ 
+
+  socket.on("disconnect", () => {
+    for (let room in roomusers) {
+      roomusers[room] = roomusers[room].filter(id => id !== socket.id);
+
+      if (roomusers[room].length === 0) {
+        delete roomusers[room];
+      }
+    }
+});
+
+ });
 
 
-
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
     console.log("server running")
 })

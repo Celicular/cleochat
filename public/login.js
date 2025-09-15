@@ -1,7 +1,7 @@
 loginbtn = document.getElementById('submit');
 
 async function login(data){
-    await fetch("/login", {
+    await fetch("${API_URL}/login", {
         method: 'POST',
         headers: {
             'Content-Type': 'Application/json'

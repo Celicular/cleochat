@@ -1,5 +1,7 @@
-regButton = document.getElementById('submit');
+
 import API_URL from "./config.js";
+
+regButton = document.getElementById('submit');
 
 function register(data) {
     fetch(`${API_URL}/register`, {

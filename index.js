@@ -53,6 +53,15 @@ const io = new Server(server, {
 
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, 'public' , 'main.html')));
 
+const query = (sql, params) => {
+    return new Promise((resolve, reject) => {
+        db.query(sql, params, (err, result) => {
+            if (err) return reject(err);
+            resolve(result);
+        });
+    });
+};
+
 
 app.post("/register", async (req, res) => {
     const { name, mobile, email, password, username } = req.body;
@@ -90,57 +99,49 @@ app.post("/register", async (req, res) => {
     
 });
 
+app.post("/invite", async (req, res) => {
+    try {
+        const data = req.body;
+        const session = data.session;
+        const inviteCode = data.invite;
 
-app.post("/invite", (req, res) => {
-    const data = req.body;
-    console.log(data);
-    let address;
-    db.query("SELECT * FROM cusers WHERE session=?", [data.session], async (err, result) => {
-        if(err) throw err
-        const userData = result[0];
-        address = userData.address;
-        db.query("SELECT * FROM userpublic WHERE userAddress = ?", [address], (e,r) => {
-            if (e) throw e;
-            const callbackdata = r[0];
-            if(callbackdata.InviteId !== data.invite){
-                db.query("SELECT contactData FROM userContacts WHERE address = ?", [address], (e,r) => {
-                    const currentInvites = r[0].contactData.split(",");
-                    if(currentInvites.includes(data.invite)){
-                        res.json({
-                            result : 'fail due to invite exist'
-                        })
-                    }else{
-                        db.query("UPDATE usercontacts SET contactData = CONCAT(contactData, ?) WHERE address = ?", [data.invite + ",", address], (e,r) => {
-                            if(e) throw e;
-                        })
-                        res.json({
-                            result : 'ok'
-                        })
-                    }
-                })                
-            }else{
-                res.json({
-                    result : 'fail'
-                })
-            }
-        })
-    })
+        const users = await query("SELECT * FROM cusers WHERE session = ?", [session]);
+        if (users.length === 0) {
+            return res.json({ result: "fail", message: "Invalid session" });
+        }
+        const user = users[0];
+        const address = user.address;
 
+        const publicRows = await query("SELECT * FROM userpublic WHERE userAddress = ?", [address]);
+        if (publicRows.length === 0) {
+            return res.json({ result: "fail", message: "User public data not found" });
+        }
+        const publicData = publicRows[0];
 
+        if (publicData.InviteId === inviteCode) {
+            return res.json({ result: "fail", message: "Cannot invite yourself" });
+        }
 
+        const contactRows = await query("SELECT contactData FROM usercontacts WHERE address = ?", [address]);
+        const currentContacts = (contactRows.length > 0 && contactRows[0].contactData)
+            ? contactRows[0].contactData.split(",").filter(item => item !== "")
+            : [];
 
-    
-    
-})
+        if (currentContacts.includes(inviteCode)) {
+            return res.json({ result: "fail", message: "Invite already exists" });
+        }
 
-const query = (sql, params) => {
-    return new Promise((resolve, reject) => {
-        db.query(sql, params, (err, result) => {
-            if (err) return reject(err);
-            resolve(result);
-        });
-    });
-};
+        const updatedContactData = currentContacts.concat(inviteCode).join(",") + ",";
+        await query("UPDATE usercontacts SET contactData = ? WHERE address = ?", [updatedContactData, address]);
+
+        res.json({ result: "ok" });
+
+    } catch (err) {
+        console.error("Invite Route Error:", err);
+        res.status(500).json({ result: "error", message: "Internal server error" });
+    }
+});
+
 
 app.post("/verify", async (req, res) => {
     try {

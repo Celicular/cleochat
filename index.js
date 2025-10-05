@@ -330,10 +330,11 @@ app.post("/sendMsg", (req, res) => {
     "SELECT contactData FROM usercontacts WHERE address = ?",
     [raddr],
     async (e, r) => {
+      const contacts = ""
       if (e) throw e;
       if (r[0]) {
         const rawData = r[0].contactData;
-        const contacts = rawData
+        contacts = rawData
           .split(",")
           .map((x) => x.trim())
           .filter((x) => x.length > 0);
@@ -348,6 +349,7 @@ app.post("/sendMsg", (req, res) => {
         ]);
         
     }
+      
     }
   );
 

@@ -332,8 +332,8 @@ app.post("/sendMsg", async (req, res) => {
     (e, r) => {
       if (e) throw e;
       if (r[0]) {
-        rawData = r[0].contactData;
-        contacts = rawData
+        const rawData = r[0].contactData;
+        const contacts = rawData
           .split(",")
           .map((x) => x.trim())
           .filter((x) => x.length > 0);

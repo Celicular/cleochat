@@ -333,7 +333,7 @@ app.post("/sendMsg", (req, res) => {
       const contacts = ""
       if (e) throw e;
       if (r[0]) {
-        const rawData = r[0].contactData;
+        var rawData = r[0].contactData;
         contacts = rawData
           .split(",")
           .map((x) => x.trim())

@@ -323,13 +323,13 @@ app.post("/getchats", (req, res) => {
   );
 });
 
-app.post("/sendMsg", async (req, res) => {
+app.post("/sendMsg", (req, res) => {
   const { saddr, raddr, message, invite } = req.body;
   console.log("messages sending")
   db.query(
     "SELECT contactData FROM usercontacts WHERE address = ?",
     [raddr],
-    (e, r) => {
+    async (e, r) => {
       if (e) throw e;
       if (r[0]) {
         const rawData = r[0].contactData;
@@ -339,18 +339,19 @@ app.post("/sendMsg", async (req, res) => {
           .filter((x) => x.length > 0);
         console.log(contacts);
       }
+      if(contacts && !contacts.includes(invite)) {
+        console.log("adding invite");
+        const uContactData = contacts.concat(invite).join(",") + ",";
+        await query("UPDATE usercontacts SET contactData = ? WHERE address = ?", [
+        uContactData,
+        raddr,
+        ]);
+        
+    }
     }
   );
 
-  if(contacts && !contacts.includes(invite)) {
-    console.log("adding invite");
-    const uContactData = contacts.concat(invite).join(",") + ",";
-    await query("UPDATE usercontacts SET contactData = ? WHERE address = ?", [
-      uContactData,
-      raddr,
-    ]);
-    
-  }
+  
 
   db.query(
     "INSERT INTO chats(senderaddr, recieveaddr, message, isread, issent, type) VALUES (?,?,?,?,?,?)",

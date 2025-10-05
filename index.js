@@ -330,10 +330,10 @@ app.post("/sendMsg", (req, res) => {
     "SELECT contactData FROM usercontacts WHERE address = ?",
     [raddr],
     async (e, r) => {
-      const contacts = ""
+      var contacts = ""
       if (e) throw e;
       if (r[0]) {
-        var rawData = r[0].contactData;
+        const rawData = r[0].contactData;
         contacts = rawData
           .split(",")
           .map((x) => x.trim())

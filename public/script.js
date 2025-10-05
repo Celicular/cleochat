@@ -15,6 +15,7 @@ function loadsidebar() {
 }
 
 showChat.addEventListener("click", (e) => {
+  checkSession();
   loadsidebar();
 });
 

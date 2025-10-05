@@ -342,7 +342,7 @@ app.post("/sendMsg", async (req, res) => {
     }
   );
 
-  if (!contacts.includes(invite)) {
+  if(contacts && !contacts.includes(invite)) {
     console.log("adding invite");
     const uContactData = contacts.concat(invite).join(",") + ",";
     await query("UPDATE usercontacts SET contactData = ? WHERE address = ?", [
